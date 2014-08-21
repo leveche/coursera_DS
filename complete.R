@@ -13,23 +13,6 @@ complete <- function(directory=directory, id = 1:332) {
     ## where 'id' is the monitor ID number and 'nobs' is the
     ## number of complete cases
 
-    ## Given a vector monitor ID numbers, 'pollutantmean' reads that
-    ## monitors' particulate matter data from the directory specified in
-    ## the 'directory' argument and returns the mean of the pollutant
-    ## across all of the monitors, ignoring any missing values
-
-    ## 'pollutant' is a character of length 1 indicating
-    ## the name of the pollutant  we will calculate the
-    ## mean; either "sulfate" or "nitr
-
-    ## 'id' is an integer vector indicating the monitor ID numbers
-    ## to be used
-
-    ##  the mean of the pollutant across all monitors list
-    ## in the 'id' vector (ignoring NA values)
-
-    
-
     readdata <- function(directory=directory, id) {
         
         ## set up an empty data frame to hold the data
@@ -53,6 +36,21 @@ complete <- function(directory=directory, id = 1:332) {
     }
 
     pollutantData <- readdata(directory=directory, id=id)
-    
-    mean(pollutantData[,pollutant],na.rm=TRUE)
+
+    completeObs <- data.frame ( id=integer(), nobs=integer() )
+   
+    ## need SELECT WHERE id=id AND sulfate != NA AND nitrate != NA
+    completeData <- pollutantData[ (! (  is.na(pollutantData$sulfate)
+                                       | is.na(pollutantData$nitrate)
+                                       )), ]
+
+   for (i in id) {
+        completeObs <- rbind( completeObs,
+              c(i,
+                (nrow(completeData[completeData$ID == i,])))
+              )
+    }
+
+    names(completeObs) <- c('id','nobs')
+    completeObs                         
 }
