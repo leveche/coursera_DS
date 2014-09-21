@@ -53,7 +53,19 @@ for (supp in c("OJ","VC")) {
 	print (sd(v))
     }
 }
+
 ```
+
+To visualize these statistics, boxplot is useful:
+
+```{r}
+par(mfrow=c(1,2)) 
+boxplot(len ~ supp,data=ToothGrowth, main="Length",
+   xlab="supp", ylab="length") 
+boxplot(len ~ dose,data=ToothGrowth, main="Length",
+   xlab="dose", ylab="length") 
+```
+
 
 ### Compare Tooth length by supp and dose
 This is perhaps more properly modelled by a regression analysis. We will see if increasing the dosage will have an effect on the tooth lenghts. For this, we'll take vectors of differences in the tooth lenghts for dose = 0.5 and dose = 1.0, as well as dose = 1.0 and dose = 2.0.
