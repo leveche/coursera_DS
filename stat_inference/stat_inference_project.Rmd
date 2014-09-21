@@ -1,0 +1,105 @@
+---
+title: "Coursera Statistical Inference Peer Assesment"
+output: 
+  html_document:
+    keep_md: true
+---
+
+# Coursera Statistical Inference Peer Assesment
+
+<!-- Assignment
+# The exponential distribution can be simulated in R with rexp(n,
+# lambda) where lambda is the rate parameter. The mean of exponential
+# distribution is 1/lambda and the standard deviation is also also
+# 1/lambda. Set lambda = 0.2 for all of the simulations. In this
+# simulation, you will investigate the distribution of averages of 40
+# exponential(0.2)s. Note that you will need to do a thousand or so
+# simulated averages of 40 exponentials.
+
+Illustrate via simulation and associated explanatory text the
+properties of the distribution of the mean of 40 exponential(0.2)s.
+You should
+
+1. Show where the distribution is centered at and compare it to the
+theoretical center of the distribution.
+2. Show how variable it is and compare it to the theoretical variance
+of the distribution.
+3. Show that the distribution is approximately normal.
+4. Evaluate the coverage of the confidence interval for 1/lambda: \bar
+X ±1.96Sn.
+
+-->
+
+## Experiments with the exponential distibution
+
+### Set up the experiment run
+```{r}
+lambda <- 0.2
+n <- 40
+N <- 2^16 # approx. 65k experiments
+```
+#### Run N experiments, each consisting of n draws from the $exp(\lambda)$ distribution.
+```{r}
+f <- function (x) rexp(n,lambda)
+E <- sapply(1:N,f)
+sample_means <- (apply(E,2,mean))
+length(sample_means)
+```
+### Visualize Results
+```{r}
+hist(sample_means,freq=FALSE,prob=TRUE,main="distribution of sample means")
+lines(density(sample_means),col='blue')
+
+# Plot a normal distribution with the theoretically-predicted parameters
+x <- seq(min(sample_means), max(sample_means), length=N)
+hx <- dnorm(x,mean=1/lambda,sd=1/(lambda*sqrt(n)))
+lines(x, hx, type="l", lty=2,col='red')
+
+# legend
+legend(6.,0.45,c("observed sample means","normal approximation"),lwd=c(2.5,2.5),col=c("blue","red"))
+```
+
+### Distribution center
+The expected value of the sample means is the same as the mean of the underlying random variable:
+$$ \mathbf{E} (\bar x) = \bar X = \frac{1}{\lambda} = \frac{1}{0.2} = 5.0$$
+```{r}
+mean(sample_means)
+```
+
+### Observed Variance of the Samples
+The variance of the sample means is $$Var(\bar X) = \frac{Var(X)}{n} = \frac{1/\lambda^2}{n} = 25/40 = 0.625$$ The standard deviation is correspondingly $$\sqrt{Var(\bar X)} = \frac{1}{\lambda\sqrt{n}} = \frac{5}{\sqrt{40}} \approx 0.7905694$$
+
+```{r}
+sd(sample_means)^2 # variance
+sd(sample_means) # standard deviation
+```
+
+### CLT: Limit is Normal
+The 'standard' way of comparing the sample distribution with the Normal is a Q-Q plot, which gives a comparison of the cumulative distribution function to that of the Gaussian.
+```{r}
+qqnorm(sample_means)
+qqline(sample_means)
+```
+
+We see a good match in the region of about $\sigma$ around the mean, and a poorer match on the fringes of the distribution. This is not surprising, considering that the exponential distribution(and hence our samples), unlike the normal, only attains positive values. A better illustration of the CLT is given by drastically larger samples, e.g. for n~1k:
+```{r}
+g <- function(x) rexp(2^10,lambda)
+sample_means_2 <- (apply(sapply(1:N,g),2,mean))
+qqnorm(sample_means_2)
+qqline(sample_means_2)
+```
+
+### Coverage of the confidence interval for $1/\lambda \in \bar X \pm 1.96 \frac{s}{\sqrt{n}}$
+We are going to count the number of our sample means that fall inside 1.96 estimated sample standard deviations from the estimated sample mean:
+```{r}
+hits <- sum(rep(1,length(sample_means[
+     sample_means >= mean(sample_means)-1.96*sd(sample_means) 
+     & sample_means <= mean(sample_means)+1.96*sd(sample_means)])))
+hits
+```
+Which is 95% of the total number of trials we performed:
+```{r}
+hits/N
+```
+
+# The End
