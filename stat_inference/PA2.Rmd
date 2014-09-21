@@ -1,0 +1,114 @@
+---
+title: "Coursera Statistical Inference Peer Assesment Part 2"
+output: 
+  html_document:
+    keep_md: true
+---
+
+# Coursera Statistical Inference Peer Assesment - Part 2
+
+<!-- Assignment 
+
+1. Load the ToothGrowth data and perform some basic exploratory data
+analyses
+
+2. Provide a basic summary of the data.  
+
+3. Use confidence intervals and hypothesis tests to compare tooth growth
+by supp and dose. (Use the techniques from class even if there's other
+approaches worth considering)
+
+4. State your conclusions and the assumptions needed for your
+conclusions.  -->
+
+## ToothGrowth Data - BASIC EXPLORATION
+
+### Read in the data and plot
+```{r}
+data("ToothGrowth")
+par(mfrow=c(1,2)) 
+for (supp in c("OJ","VC")) {
+    plot(ToothGrowth[ToothGrowth$supp == supp,]$dose, 
+    		ToothGrowth[ToothGrowth$supp == supp,]$len, 
+		xlab="dose", ylab="length", main=supp)
+}
+```
+
+We can see that despite sigificant variation in each group, there does appear to be a dependence of the tooth size on the dosage. Whether a dependence on the method of delivery (OJ vs VC) exists is less clear.
+
+### Basic Summary of the Data
+
+#### Sample Mean and Variance
+```{r}
+mean(ToothGrowth$len)
+sd(ToothGrowth$len)
+```
+
+#### Sample Means and standard deviations for each dose and delivery method
+```{r}
+for (supp in c("OJ","VC")) {
+    for (dose in c(0.5,1.0,2.0)) {
+    	v <-  ToothGrowth[ToothGrowth$supp == supp & ToothGrowth$dose == dose,]$len
+	print (mean (v))
+	print (sd(v))
+    }
+}
+```
+
+### Compare Tooth length by supp and dose
+This is perhaps more properly modelled by a regression analysis. We will see if increasing the dosage will have an effect on the tooth lenghts. For this, we'll take vectors of differences in the tooth lenghts for dose = 0.5 and dose = 1.0, as well as dose = 1.0 and dose = 2.0.
+Our null hypothesis in both cases are that the mean of the differences is zero, i.e. increasing the dosage has no effect.
+```{r}
+d_oj_12 <- ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 1.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 0.5,]$len 
+	
+d_oj_23 <- ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 2.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 1.0,]$len 
+	
+d_vc_12 <- ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 1.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 0.5,]$len 
+
+d_vc_23 <- ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 2.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 1.0,]$len 
+
+d_oj_13 <- ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 2.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'OJ' & 
+	ToothGrowth$dose == 0.5,]$len 
+	
+d_vc_13 <- ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 2.0,]$len - 
+	ToothGrowth[ToothGrowth$supp == 'VC' & 
+	ToothGrowth$dose == 0.5,]$len 
+```
+
+I will only include R output for two t tests in this report, the rest can be reproduced trivially.
+
+```{r}
+t.test(d_vc_12)
+```
+The 95% confidence interval does not contain zero, we therefore reject the null null hypothesis and conclude that the tooth length does appear to depend on the dose. 
+
+However, as can be seen from the differences between dose=2.0 and dose=1.0 for the OJ delivery, the effects of increasing the dosage may diminish rapidly. In that case, we failed to reject the null hypothesis.
+```{r}
+t.test(d_oj_23)
+```
+
+We can also test if the two methods of delivery produce statistically significant results. We'll consider the vector of differences between d_oj_13 and d_vc_13, with null hypothesis that the mean is zero.
+
+```{r}
+t.test(d_vc_13-d_oj_13)
+```
+
+Again, we fail to reject the null hypothesis confidence 95%, since the corresponding t interval contains zero. The evidence does not suport the claim that VC is more effective in promoting tooth growth.
+
+### Conclusions and Assumptions
+We assumed that the distribution of the tooth lengths has central symmetry, in order to use Student's t test. 
