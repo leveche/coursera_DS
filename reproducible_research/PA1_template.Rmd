@@ -1,0 +1,119 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+```{r}
+x <- read.csv("./activity.csv")
+x$date <- as.Date.character(x$date)
+```
+
+## What is mean total number of steps taken per day?
+
+### Histogram of the total number of steps taken each day
+```{r}
+dates <- unique(x$date)
+stepsDay <- numeric()
+for (d in dates) {
+  stepsDay <- c(stepsDay,sum(x[x$date == d,]$steps) )
+}
+plot(dates,stepsDay,"h")
+```
+
+### mean and median total number of steps taken per day
+```{r}
+mean(stepsDay,na.rm=TRUE)
+median(stepsDay,na.rm=TRUE)
+```
+
+
+## What is the average daily activity pattern?
+
+###  the average number of steps taken, averaged across all days, vs 5-minute interval
+
+```{r}
+intervals <- unique(x$interval)
+stepsInterval <- numeric()
+for (i in intervals) {
+  stepsInterval <- c(stepsInterval, mean(x[x$interval==i,]$steps,na.rm=TRUE))
+}
+plot(intervals,stepsInterval,"l")
+```
+
+### Find the 5-minute interval with maximum average number of steps
+
+```{r}
+intervals[which.max(stepsInterval)]
+```
+
+## Imputing missing values
+
+### total number of missing values in the dataset
+```{r}
+nrow(x[is.na(x$steps),])
+```
+
+### Fill in the missing data in the dataset
+
+some prep work
+```{r}
+y <-x
+si <- cbind.data.frame(intervals,stepsInterval)
+```
+
+We will replace the missing values by the average value for the relevant time interval
+
+```{r}
+for (r in as.numeric(rownames(y))) {
+  if (is.na(y[r,"steps"])) {
+    y[r,"steps"] <- si[si$intervals==y[r,"interval"],"stepsInterval"]
+  }
+}
+```
+
+### New histogram of the daily steps taken
+
+```{r}
+stepsDayNew <- numeric()
+for (d in dates) {
+  stepsDayNew <- c(stepsDayNew,sum(y[y$date == d,]$steps) )
+}
+plot(dates,stepsDayNew,"h")
+```
+
+### New mean and median
+
+```{r}
+mean(stepsDayNew,na.rm=FALSE)
+median(stepsDayNew,na.rm=FALSE)
+```
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+### augment the filled-in data set with weekend/weekday indicator
+
+```{r}
+isweekend <- weekdays(y$date) %in% c("Saturday","Sunday")
+y <- cbind(y,isweekend)
+```
+
+### plot the 5-minute interval averages for weekdays and weekends
+
+```{r}
+stepsIntervalWeekend <- numeric()
+stepsIntervalWeekday <- numeric()
+for (i in intervals) {
+  stepsIntervalWeekend <- c(stepsIntervalWeekend, mean(y[y$isweekend & y$interval==i,]$steps,na.rm=TRUE))
+  stepsIntervalWeekday <- c(stepsIntervalWeekday, mean(y[(! y$isweekend ) & y$interval==i,]$steps,na.rm=TRUE))
+}
+par(mfrow=c(2,1))
+plot(intervals,stepsIntervalWeekend,"l",main="Weekends")
+plot(intervals,stepsIntervalWeekday,"l",main="Weekdays")
+```
+
+## The End
