@@ -1,0 +1,20 @@
+<!--
+# Take the mtcars data set and write up an analysis to answer their
+# question using regression models and exploratory data analyses.
+
+#    “Is an automatic or manual transmission better for MPG”
+#    "Quantify the MPG difference between automatic and manual transmissions"
+
+# Did the student interpret the coefficients correctly?
+# Did the student do some exploratory data analyses?
+# Did the student fit multiple models and detail their strategy for model selection?
+# Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
+# Did the student do a residual plot and some diagnostics?
+# Did the student quantify the uncertainty in their conclusions and/or
+# perform an inference correctly?
+# Did the report include an executive summary?
+-->
+
+
+# Effect Automatic vm Manual Transmission on MPG
+
