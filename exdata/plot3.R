@@ -1,10 +1,12 @@
+# load ggplot2
+library(ggplot2)
+
+# load the data
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
 years <- unique(NEI$year)
 
-library(ggplot2)
-
-
+# aggregates per type
 a <- data.frame(yr = numeric(), type = character(), emissions=numeric(), stringsAsFactors=F)
 for (year in unique(NEI$year)) {
   for (type in unique(NEI$type)) {
@@ -13,7 +15,9 @@ for (year in unique(NEI$year)) {
   }
 }
 
-png(filename="./plot3.png")
-p <- qplot(yr,emissions, fill=type, color=type, data=a, geom=c("area"), ylab="Emissons, tons", xlab="year", main="Emissions per type in Baltimore City" )
-ggsave(filename="./plot3.png",plot=p,scale=0.4)
+# plot
+ppi=200
+png(filename="./plot3.png", width=4.5*ppi, height=2.55*ppi)
+print(ggplot(a) + geom_area(aes(x=yr,y=emissions,fill=type)) +ggtitle("Emissions per type in Baltimore City"))
 dev.off()
+
